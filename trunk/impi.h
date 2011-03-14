@@ -1,10 +1,10 @@
 #ifndef IMPI_H
 #define IMPI_H
 
-#include <QtGui/QWidget>
+#include <QtGui/QMainWindow>
 #include "ui_impi.h"
 
-class Impi : public QWidget
+class Impi : public QMainWindow
 {
     Q_OBJECT
 
@@ -13,7 +13,7 @@ public:
     ~Impi();
 
 private:
-    Ui::impiClass ui;
+    Ui::ImpiClass ui;
 };
 
 #endif // IMPI_H

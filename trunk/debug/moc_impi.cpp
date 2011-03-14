@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'impi.h'
 **
-** Created: Mon Mar 14 19:25:52 2011
+** Created: Mon Mar 14 21:10:46 2011
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.7.2)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -17,7 +17,7 @@
 #endif
 
 QT_BEGIN_MOC_NAMESPACE
-static const uint qt_meta_data_impi[] = {
+static const uint qt_meta_data_Impi[] = {
 
  // content:
        5,       // revision
@@ -33,13 +33,13 @@ static const uint qt_meta_data_impi[] = {
        0        // eod
 };
 
-static const char qt_meta_stringdata_impi[] = {
-    "impi\0"
+static const char qt_meta_stringdata_Impi[] = {
+    "Impi\0"
 };
 
 const QMetaObject Impi::staticMetaObject = {
-    { &QWidget::staticMetaObject, qt_meta_stringdata_impi,
-      qt_meta_data_impi, 0 }
+    { &QMainWindow::staticMetaObject, qt_meta_stringdata_Impi,
+      qt_meta_data_Impi, 0 }
 };
 
 #ifdef Q_NO_DATA_RELOCATION
@@ -54,14 +54,14 @@ const QMetaObject *Impi::metaObject() const
 void *Impi::qt_metacast(const char *_clname)
 {
     if (!_clname) return 0;
-    if (!strcmp(_clname, qt_meta_stringdata_impi))
+    if (!strcmp(_clname, qt_meta_stringdata_Impi))
         return static_cast<void*>(const_cast< Impi*>(this));
-    return QWidget::qt_metacast(_clname);
+    return QMainWindow::qt_metacast(_clname);
 }
 
 int Impi::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
-    _id = QWidget::qt_metacall(_c, _id, _a);
+    _id = QMainWindow::qt_metacall(_c, _id, _a);
     if (_id < 0)
         return _id;
     return _id;

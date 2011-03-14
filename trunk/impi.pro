@@ -4,7 +4,7 @@ QT += core \
     gui \
     sql
 HEADERS +=
-SOURCES += test.cpp
+SOURCES +=
 FORMS += impi.ui \
     impi.ui
 RESOURCES +=

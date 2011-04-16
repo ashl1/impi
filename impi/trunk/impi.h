@@ -4,13 +4,13 @@
 #include <QtGui/QMainWindow>
 #include "ui_impi.h"
 
-class impi : public QMainWindow
+class Impi : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    impi(QWidget *parent = 0);
-    ~impi();
+    Impi(QWidget *parent = 0);
+    ~Impi();
 
 private:
     Ui::impiClass ui;

@@ -1,12 +1,12 @@
 #include "impi.h"
 
-impi::impi(QWidget *parent)
+Impi::Impi(QWidget *parent)
     : QMainWindow(parent)
 {
 	ui.setupUi(this);
 }
 
-impi::~impi()
+Impi::~Impi()
 {
 
 }

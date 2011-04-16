@@ -1,0 +1,9 @@
+TEMPLATE = lib
+TARGET = impi-skype-linux
+CONFIG += plugin
+QT += core
+QT -= gui
+HEADERS += skype-linux.h
+SOURCES += skype-linux.cpp
+FORMS +=
+RESOURCES +=

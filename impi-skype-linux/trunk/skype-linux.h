@@ -9,7 +9,7 @@
 #define SKYPELINUX_H_
 
 #include <QObject>
-#include "../impi/client-interface.h"
+#include "../impi/plugin-interface.h"
 
 class AccountSkypeLinux : public Account {
 

@@ -3,9 +3,13 @@ TARGET = impi
 QT += core \
     gui \
     sql
-HEADERS += impi.h \
-    client-interface.h
-SOURCES += impi.cpp \
-    main.cpp
-FORMS += impi.ui
-RESOURCES += 
+HEADERS += plugin-interface.h \
+    error.h \
+    objects.h \
+    impi.h
+SOURCES += ui_impi.cpp \
+    error.cpp \
+    main.cpp \
+    impi.cpp
+FORMS +=
+RESOURCES +=

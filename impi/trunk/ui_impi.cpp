@@ -52,7 +52,7 @@ QMenu* MenuPluginElement::GetMain()const{
 	return main;
 }
 
-void ImpiClass::setupUi(QMainWindow *impiClass, QVector<PluginInterface*>& plugins){
+void ImpiClass::setupUi(QMainWindow *impiClass, Plugins* plugins){
 	if (impiClass->objectName().isEmpty())
 		impiClass->setObjectName(QString::fromUtf8("impiClass"));
 	impiClass->resize(800, 600);
@@ -65,8 +65,9 @@ void ImpiClass::setupUi(QMainWindow *impiClass, QVector<PluginInterface*>& plugi
 	load = new QMenu(menubar);
 	load->setObjectName("load");
 
-	foreach(PluginInterface* plugin, plugins)
-		this->plugins.append(MenuPluginElement(plugin->FullName(), menubar, true, plugin->CanInitFromFile()));
+	for(quint8 i = 0; i < plugins->Count(); ++i)
+		this->plugins.append(MenuPluginElement(plugins->Plugin(i)->FullName(), menubar,
+				true, plugins->Plugin(i)->CanInitFromFile()));
 
 	impiClass->setMenuBar(menubar);
 

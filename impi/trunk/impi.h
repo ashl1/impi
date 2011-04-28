@@ -2,9 +2,15 @@
 #define IMPI_H
 
 #include <QtGui/QMainWindow>
-#include <QVector>
+
+#include <QFileDialog>
+#include <QMessageBox>
+
 #include "ui_impi.h"
 #include "plugin-interface.h"
+#include "plugins.h"
+
+class QString;
 
 class Impi : public QMainWindow
 {
@@ -12,16 +18,10 @@ class Impi : public QMainWindow
 
 private:
     ImpiClass ui;
-
-public:
-    QVector<PluginInterface*> plugins;
-
+    Plugins* plugins;
 public:
     Impi(QWidget *parent = 0);
     ~Impi();
-
-private:
-    void PluginsInit();
 
 public slots:
 	void onWantConfPath();

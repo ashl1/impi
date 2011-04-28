@@ -20,7 +20,7 @@ class QString;
  * name at whole (major + " " + minor): Skype Linux
  */
 
-class PluginInterface {
+class PluginInterface{
 public:
 	virtual QString Version() const = 0;
 	virtual QString FullName() const = 0;
@@ -28,16 +28,25 @@ public:
 	virtual QString MinorName() const = 0;
 	virtual bool CanInitFromFile() const = 0;
 
-	virtual ~PluginInterface() {}
+	virtual void SetParent(QObject* parent) = 0;
+	virtual ~PluginInterface(){};
 
-	virtual void InitFromConfPath(QDir* path) = 0;
-	virtual void InitFromFile(QDir* path, QString* filename) = 0;
+	// path - path to initial dir with may be accounts on it
+	// pathes - list of absolute pathes to accounts dir
+	// names - list of shown account names
+	// must have at least 1 account dir path and name
+	virtual void GetClientAccounts(const QDir& path, QVector<QDir>& pathes, QVector<QString>& names) const = 0;
+	virtual void InitFromConfPath(const QDir& path) = 0;
+	virtual void InitFromFile(const QDir& path, const QString& filename) = 0;
 
 	// for each the object exist: Account, Client, etc
-	virtual void Accounts(quint32 count, quint32 from, QObject* accounts) = 0;
-	virtual void Clients(quint32 count, quint32 from, QObject* clients) = 0;
-	virtual void Messages(quint64 count, quint64 from, QObject* messages) = 0;
-	virtual void Users(quint32 count, quint32 from, QObject* users) = 0;
+	virtual QObject* Accounts(quint32 count, quint32 from) = 0;
+	virtual QObject* Clients(quint32 count, quint32 from) = 0;
+	virtual QObject* Messages(quint64 count, quint64 from) = 0;
+	virtual QObject* Users(quint32 count, quint32 from) = 0;
+
+signals:
+	virtual void Loaded() = 0;
 };
 
 Q_DECLARE_INTERFACE(PluginInterface, "org.impi.ClientInterface/0.1")

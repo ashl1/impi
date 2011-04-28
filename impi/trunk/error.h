@@ -21,8 +21,10 @@ public:
 
 /* Types of errors
 * 1 - Object cannot support this function. For example: in plugins.
-* 2 - Cold not find a file. For example: "plugins" directory
-*
+* 2 - Cold not find a file/directory. For example: "plugins" directory
+* 3 - Cannot unload plugin
+* 4 - This is not valid path
+* 5 - The resource is busy
  */
 
 #endif /* ERROR_H_ */

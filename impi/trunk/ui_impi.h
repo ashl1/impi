@@ -22,6 +22,7 @@
 #include <QtGui/QWidget>
 
 #include "plugin-interface.h"
+#include "plugins.h"
 
 class MenuPluginElement {
 private:
@@ -31,7 +32,7 @@ private:
 
 public:
 	MenuPluginElement();
-	MenuPluginElement(QString pluginName, QWidget *parent, bool confPath = false, bool filePath = false);
+	MenuPluginElement(QString pluginName, QWidget *parent = 0, bool confPath = false, bool filePath = false);
 	~MenuPluginElement();
 
 	QAction* GetConfPath() const;
@@ -50,7 +51,7 @@ public:
 	QVector<MenuPluginElement> plugins;
 	QMenu *load;
 
-    void setupUi(QMainWindow *impiClass, QVector<PluginInterface*>& plugins);
+    void setupUi(QMainWindow *impiClass, Plugins* plugins);
 
     void retranslateUi(QMainWindow *impiClass);
 

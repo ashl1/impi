@@ -8,6 +8,12 @@
 #include <qplugin.h>
 #include "skype-linux.h"
 
+/*virtual */ void PluginSkypeLinux::SetParent(QObject* parent){
+	//setParent(parent);
+	connect(this, SIGNAL(Loaded()), parent, SLOT(Loaded()));
+}
+
+
 PluginSkypeLinux::~PluginSkypeLinux(){
 
 }
@@ -30,27 +36,45 @@ PluginSkypeLinux::~PluginSkypeLinux(){
 	return false;
 }
 
-/* virtual */ void PluginSkypeLinux::InitFromConfPath(QDir* path){
-
+/*virtual */ void PluginSkypeLinux::GetClientAccounts(const QDir& path, QVector<QDir>& pathes,
+		QVector<QString>& names) const{
+	// check if the path is valid
+	// should be files: "shared.lck" and "shared.xml"
+	// directories are an accounts
+	if (!path.exists("shared.lck") || !path.exists("shared.xml")){
+		//throw Error(4, "The path is not valid path with accounts");
+	}
+	pathes.clear();
+	names.clear();
+	foreach(QString dirName, path.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name)){
+		names.append(dirName);
+		QDir dir(path);
+		dir.cd(dirName);
+		pathes.append(dir);
+	}
 }
 
-/* virtual */ void PluginSkypeLinux::InitFromFile(QDir* path, QString* filename){
-	throw Error(1);
+/* virtual */ void PluginSkypeLinux::InitFromConfPath(const QDir& path){
+	emit Loaded();
 }
 
-/* virtual */ void PluginSkypeLinux::Accounts(quint32 count, quint32 from, QObject* accounts){
+/* virtual */ void PluginSkypeLinux::InitFromFile(const QDir& path, const QString& filename){
+	//throw Error(1);
+}
+
+/* virtual */ QObject* PluginSkypeLinux::Accounts(quint32 count, quint32 from){
 	;
 }
 
-/* virtual */ void PluginSkypeLinux::Clients(quint32 count, quint32 from, QObject* clients){
+/* virtual */ QObject* PluginSkypeLinux::Clients(quint32 count, quint32 from){
 	;
 }
 
-/* virtual */ void PluginSkypeLinux::Messages(quint64 count, quint64 from, QObject* messages){
+/* virtual */ QObject* PluginSkypeLinux::Messages(quint64 count, quint64 from){
 	;
 }
 
-/* virtual */ void PluginSkypeLinux::Users(quint32 count, quint32 from, QObject* users){
+/* virtual */ QObject* PluginSkypeLinux::Users(quint32 count, quint32 from){
 	;
 }
 

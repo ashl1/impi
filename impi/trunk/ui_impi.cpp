@@ -7,6 +7,9 @@
 
 #include "ui_impi.h"
 
+using ::Impi::MenuPluginElement;
+using ::Impi::ImpiClass;
+
 MenuPluginElement::MenuPluginElement(){
 	main = 0;
 	confPath = 0;

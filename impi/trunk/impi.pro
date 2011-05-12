@@ -3,7 +3,8 @@ TARGET = impi
 QT += core \
     gui \
     sql
-HEADERS += objects.h \
+HEADERS += limit.h \
+    objects.h \
     dialogs/chooseAccount.h \
     plugins.h \
     plugin-interface.h \

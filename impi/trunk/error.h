@@ -10,18 +10,20 @@
 
 #include <QString>
 
-class Error {
-public:
-	quint16 type;
-	QString text;
+namespace Impi{
 
-public:
-	Error(quint16 type, QString text);
-	Error(quint16 type);
-};
+	class Error {
+	public:
+		quint16 type;
+		QString text;
+
+	public:
+		Error(quint16 type, QString text);
+		Error(quint16 type);
+	};
 
 /* Types of errors
- * 1 - should reserved for unexpected error
+* 1 - should reserved for unexpected error
 * 1 - Object cannot support this function. For example: in plugins.
 * 2 - Could not find a file/directory. For example: "plugins" directory
 * 3 - Cannot unload plugin
@@ -29,5 +31,6 @@ public:
 * 5 - The resource is busy
 * 6 - Cannot load the file
  */
+} // namespace Impi
 
 #endif /* ERROR_H_ */

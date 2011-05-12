@@ -13,64 +13,67 @@
 #include <QPluginLoader>
 #include "plugin-interface.h"
 
-class PluginDummy: public QObject{
-	Q_OBJECT
+namespace Impi{
 
-public:
-	PluginDummy(QObject* parent = 0):QObject(parent){};
+	class PluginDummy: public QObject{
+		Q_OBJECT
 
-signals:
-	void Initialized();
-public slots:
-	void SlotInitialized();
-};
+	public:
+		PluginDummy(QObject* parent = 0):QObject(parent){};
 
-class Plugin: public QObject{
-	Q_OBJECT
+	signals:
+		void Initialized();
+	public slots:
+		void SlotInitialized();
+	};
 
-private:
-	QPluginLoader* pluginLoader;
-	PluginInterface* plugin;
-	PluginDummy* pluginDummy;
+	class Plugin: public QObject{
+		Q_OBJECT
 
-public:
-	Plugin(QObject* parent = 0):QObject(parent){};
-	~Plugin();
+	private:
+		QPluginLoader* pluginLoader;
+		PluginInterface* plugin;
+		PluginDummy* pluginDummy;
 
-	PluginInterface* GetPlugin() const;
-	void Load(const QString& libname);
-	void Unload();
+	public:
+		Plugin(QObject* parent = 0):QObject(parent){};
+		~Plugin();
 
-public slots:
-	void Initialized();
-};
+		PluginInterface* GetPlugin() const;
+		void Load(const QString& libname);
+		void Unload();
 
-class Plugins: public QObject{
-	Q_OBJECT
-private:
-/* should use Q..List instead
- *
- */
-	QVector<Plugin*> plugins;
+	public slots:
+		void Initialized();
+	};
 
-public:
-	Plugins(QObject* parent/*= 0*/):QObject(parent){};
-	~Plugins();
+	class Plugins: public QObject{
+		Q_OBJECT
+	private:
+	/* should use Q..List instead
+	 *
+	 */
+		QVector<Plugin*> plugins;
 
-/* should rewrite to scan all plugins and check it versions
- *
- */
-	void InitializeAll();
+	public:
+		Plugins(QObject* parent/*= 0*/):QObject(parent){};
+		~Plugins();
 
-	quint8 Count();
+	/* should rewrite to scan all plugins and check it versions
+	 *
+	 */
+		void InitializeAll();
 
-	// load plugin from standard plugin path (%app%/plugins)
-	PluginInterface* LoadPlugin(const QString& libname);
-	void UnloadPlugin(PluginInterface* plugin);
+		quint8 Count();
 
-	// get PluginInterface* by it's (QObject's) name
-	PluginInterface* GetPlugin(QString fullname) const;
-	PluginInterface* GetPlugin(quint8 position) const;
-};
+		// load plugin from standard plugin path (%app%/plugins)
+		PluginInterface* LoadPlugin(const QString& libname);
+		void UnloadPlugin(PluginInterface* plugin);
+
+		// get PluginInterface* by it's (QObject's) name
+		PluginInterface* GetPlugin(QString fullname) const;
+		PluginInterface* GetPlugin(quint8 position) const;
+	};
+} // namespace Impi
 
 #endif /* PLUGINS_H_ */

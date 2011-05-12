@@ -12,6 +12,11 @@
 #include <QString>
 #include <QDir>
 
+using ::Impi::PluginDummy;
+using ::Impi::Plugin;
+using ::Impi::Plugins;
+using ::Impi::PluginInterface;
+
 void PluginDummy::SlotInitialized(){
 	emit Initialized();
 }

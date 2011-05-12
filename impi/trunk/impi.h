@@ -10,7 +10,7 @@
 #include "plugin-interface.h"
 #include "plugins.h"
 
-class QString;
+namespace Impi{
 
 class Impi : public QMainWindow
 {
@@ -27,5 +27,6 @@ public slots:
 	void onWantConfPath();
 	void onWantFilePath();
 };
+} // namespace Impi
 
 #endif // IMPI_H

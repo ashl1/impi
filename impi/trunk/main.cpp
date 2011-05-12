@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 {
 	try{
 	QApplication a(argc, argv);
-    Impi w;
+    Impi::Impi w;
 
     w.show();
 
@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 
     return a.exec();
 	}
-	catch (Error err){
+	catch (Impi::Error err){
 		qCritical() << "Error type: " << err.type << " Error: " << err.text;
 		return err.type;
 	}

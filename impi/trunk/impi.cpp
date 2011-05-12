@@ -3,7 +3,7 @@
 #include "impi.h"
 #include "dialogs/chooseAccount.h"
 
-Impi::Impi(QWidget *parent)
+Impi::Impi::Impi(QWidget *parent)
     : QMainWindow(parent)
 {
 	plugins = new Plugins(this);
@@ -11,12 +11,12 @@ Impi::Impi(QWidget *parent)
 	ui.setupUi(this, plugins);
 }
 
-Impi::~Impi()
+Impi::Impi::~Impi()
 {
 
 }
 
-void Impi::onWantConfPath(){
+void Impi::Impi::onWantConfPath(){
 	QString dirName = QFileDialog::getExistingDirectory(0, "", QDir::toNativeSeparators(QDir::homePath()+"/.Skype"),
 			QFileDialog::ShowDirsOnly);
 	if (dirName != ""){
@@ -49,6 +49,6 @@ void Impi::onWantConfPath(){
 	}
 
 }
-void Impi::onWantFilePath(){
+void Impi::Impi::onWantFilePath(){
 	;
 }

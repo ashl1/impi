@@ -24,6 +24,8 @@
 #include "plugin-interface.h"
 #include "plugins.h"
 
+namespace Impi{
+
 // initialize menu elements for plugin
 class MenuPluginElement {
 private:
@@ -57,5 +59,6 @@ public:
     void retranslateUi(QMainWindow *impiClass);
 
 };
+} // namespace Impi
 
 #endif // UI_IMPI_H

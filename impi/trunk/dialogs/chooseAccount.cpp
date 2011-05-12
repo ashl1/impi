@@ -8,6 +8,8 @@
 #include "chooseAccount.h"
 #include <QGridLayout>
 
+using ::Impi::ChooseAccountDialog;
+
 ChooseAccountDialog::ChooseAccountDialog(QVector<QString>& values, QWidget* parent/*= 0*/):
 	QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint){
 

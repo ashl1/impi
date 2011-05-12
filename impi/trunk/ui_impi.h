@@ -24,6 +24,7 @@
 #include "plugin-interface.h"
 #include "plugins.h"
 
+// initialize menu elements for plugin
 class MenuPluginElement {
 private:
 	QMenu* main;

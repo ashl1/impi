@@ -7,6 +7,7 @@ Impi::Impi(QWidget *parent)
     : QMainWindow(parent)
 {
 	plugins = new Plugins(this);
+	plugins->InitializeAll();
 	ui.setupUi(this, plugins);
 }
 
@@ -19,9 +20,9 @@ void Impi::onWantConfPath(){
 	QString dirName = QFileDialog::getExistingDirectory(0, "", QDir::toNativeSeparators(QDir::homePath()+"/.Skype"),
 			QFileDialog::ShowDirsOnly);
 	if (dirName != ""){
-		// parent because sender is a QActino which may be "conf path" or "file",
+		// parent because sender is a QAction which may be "conf path" or "file",
 		//    but only parent QMenu has object name
-		PluginInterface* plugin = plugins->Plugin(QObject::sender()->parent()->objectName());
+		PluginInterface* plugin = plugins->GetPlugin(QObject::sender()->parent()->objectName());
 
 		// check for accounts
 	    QVector<QString> accNames;

@@ -8,8 +8,8 @@
 #ifndef CLIENTINTERFACE_H_
 #define CLIENTINTERFACE_H_
 
-#include "objects.h"
 #include "error.h"
+#include "objects.h"
 
 class QDir;
 class QString;
@@ -28,8 +28,9 @@ public:
 	virtual QString MinorName() const = 0;
 	virtual bool CanInitFromFile() const = 0;
 
-	virtual void SetParent(QObject* parent) = 0;
 	virtual ~PluginInterface(){};
+
+	virtual void InitializeEvents(QObject* pluginDummy) = 0;
 
 	// path - path to initial dir with may be accounts on it
 	// pathes - list of absolute pathes to accounts dir
@@ -46,7 +47,7 @@ public:
 	virtual QObject* Users(quint32 count, quint32 from) = 0;
 
 signals:
-	virtual void Loaded() = 0;
+	virtual void Initialized() = 0;
 };
 
 Q_DECLARE_INTERFACE(PluginInterface, "org.impi.ClientInterface/0.1")

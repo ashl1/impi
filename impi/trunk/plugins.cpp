@@ -6,28 +6,70 @@
  */
 
 #include "plugins.h"
-#include <QApplication>
+#include <QCoreApplication>
 #include <QMessageBox>
+#include <QtDebug>
+#include <QString>
+#include <QDir>
 
-Plugins::Plugins(QObject* parent/*= 0*/){
-	setParent(parent);
-	// initialize all plugins
-		QDir dir(QApplication::applicationDirPath());
+void PluginDummy::SlotInitialized(){
+	emit Initialized();
+}
+
+///////////////////////////////////////////////////////////
+
+Plugin::~Plugin(){
+	this->Unload();
+}
+
+PluginInterface* Plugin::GetPlugin()const{
+	return plugin;
+}
+
+void Plugin::Load(const QString& libname){
+	QDir dir(QCoreApplication::applicationDirPath());
 		if (!dir.cd("plugins"))
 			throw Error(1);
+	pluginLoader = new QPluginLoader(dir.absoluteFilePath(libname), this);
+	QObject* pluginRaw = pluginLoader->instance();
+	plugin = qobject_cast<PluginInterface *>(pluginRaw);
+	if (!pluginLoader->isLoaded())
+		throw Error(6, QString("Plugin: ") + pluginLoader->errorString());
+
+	pluginDummy = new PluginDummy(pluginRaw);
+	connect(pluginDummy, SIGNAL(Initialized()), this, SLOT(Initialized()));
+
+	plugin->InitializeEvents(pluginDummy);
+}
+
+void Plugin::Unload(){
+	if (pluginLoader && pluginLoader->isLoaded()){
+		plugin = NULL;
+		if(!pluginLoader->unload())
+			throw Error(3, QString("Cannot unload plugin: ") + plugin->FullName());
+	}
+}
+
+void Plugin::Initialized(){
+	QMessageBox::information(0, QString("Test"), QString("Slot Loaded Test"));
+}
+
+///////////////////////////////////////////////////////////
+
+Plugins::~Plugins(){
+	plugins.clear();
+}
+
+void Plugins::InitializeAll(){
+	// initialize all plugins
+	QDir dir(QCoreApplication::applicationDirPath());
+	if (!dir.cd("plugins"))
+		throw Error(1);
 	/* 1) check filename too and throw Error if not find
 	 * 2) scan all
 	 */
 	QString str("libimpi-skype-linux.so");
 	LoadPlugin(str);
-}
-Plugins::~Plugins(){
-	foreach(QPluginLoader* pl, pluginLoaders)
-		if(!pl->unload())
-			throw Error(3, QString("Cannot unload plugin when ~Plugins"));
-
-	plugins.clear();
-	pluginLoaders.clear();
 }
 
 quint8 Plugins::Count(){
@@ -35,38 +77,27 @@ quint8 Plugins::Count(){
 }
 
 PluginInterface* Plugins::LoadPlugin(const QString& libname){
-	QDir dir(QApplication::applicationDirPath());
-		if (!dir.cd("plugins"))
-			throw Error(1);
-	QPluginLoader* pluginLoader = new QPluginLoader(dir.absoluteFilePath(libname), this);
-	pluginLoaders.append(pluginLoader);
-	PluginInterface* plugin = qobject_cast<PluginInterface *>(pluginLoader->instance());
-	// must call this due to connection to this object's (Plugins) slot Loaded
-	plugin->SetParent(this);
+	Plugin* plugin = new Plugin(this);
+	plugin->Load(libname);
 	plugins.append(plugin);
-	return plugin;
+	return plugin->GetPlugin();
 }
 
 void Plugins::UnloadPlugin(PluginInterface* plugin){
-	QVector<QPluginLoader*>::iterator plIt = pluginLoaders.begin();
-	QVector<PluginInterface*>::const_iterator it = plugins.constBegin();
-	for (; (*it != plugin) && (it != plugins.constEnd()); ++it)
-		++plIt;
-	if (!(*plIt)->unload())
-		throw Error(3, QString("Cannot unload plugin: ")+(*it)->FullName());
+	QVector<Plugin*>::iterator it = plugins.begin();
+	for (; ((*it)->GetPlugin() != plugin) && (it != plugins.end()); ++it)
+		;
+	if (it != plugins.end())
+		(*it)->Unload();
 }
 
-PluginInterface* Plugins::Plugin(QString fullname) const{
-	for (QVector<PluginInterface*>::const_iterator it = plugins.constBegin(); it != plugins.constEnd(); ++it)
-		if ((*it)->FullName() == fullname)
-			return *it;
-	return 0;
+PluginInterface* Plugins::GetPlugin(QString fullname) const{
+	for (QVector<Plugin*>::const_iterator it = plugins.constBegin(); it != plugins.constEnd(); ++it)
+		if ((*it)->GetPlugin()->FullName() == fullname)
+			return (*it)->GetPlugin();
+	return NULL;
 }
 
-PluginInterface* Plugins::Plugin(quint8 position) const{
-	return plugins.at(position);
-}
-
-void Plugins::Loaded(){
-	QMessageBox::information(0, QString("Test"), QString("Test"));
+PluginInterface* Plugins::GetPlugin(quint8 position) const{
+	return plugins.at(position)->GetPlugin();
 }

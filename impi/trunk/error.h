@@ -11,6 +11,7 @@
 #include <QString>
 
 class Error {
+public:
 	quint16 type;
 	QString text;
 
@@ -20,11 +21,13 @@ public:
 };
 
 /* Types of errors
+ * 1 - should reserved for unexpected error
 * 1 - Object cannot support this function. For example: in plugins.
-* 2 - Cold not find a file/directory. For example: "plugins" directory
+* 2 - Could not find a file/directory. For example: "plugins" directory
 * 3 - Cannot unload plugin
 * 4 - This is not valid path
 * 5 - The resource is busy
+* 6 - Cannot load the file
  */
 
 #endif /* ERROR_H_ */

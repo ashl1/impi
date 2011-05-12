@@ -7,7 +7,8 @@
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
+	try{
+	QApplication a(argc, argv);
     Impi w;
 
     w.show();
@@ -22,4 +23,13 @@ int main(int argc, char *argv[])
     	*/
 
     return a.exec();
+	}
+	catch (Error err){
+		qCritical() << "Error type: " << err.type << " Error: " << err.text;
+		return err.type;
+	}
+	catch(...){
+		qFatal("Unexpected error. The application will be closed now.");
+		return 1;
+	}
 }

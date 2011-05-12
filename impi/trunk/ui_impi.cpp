@@ -66,8 +66,8 @@ void ImpiClass::setupUi(QMainWindow *impiClass, Plugins* plugins){
 	load->setObjectName("load");
 
 	for(quint8 i = 0; i < plugins->Count(); ++i)
-		this->plugins.append(MenuPluginElement(plugins->Plugin(i)->FullName(), menubar,
-				true, plugins->Plugin(i)->CanInitFromFile()));
+		this->plugins.append(MenuPluginElement(plugins->GetPlugin(i)->FullName(), menubar,
+				true, plugins->GetPlugin(i)->CanInitFromFile()));
 
 	impiClass->setMenuBar(menubar);
 

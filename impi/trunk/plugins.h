@@ -10,22 +10,57 @@
 
 #include <QObject>
 #include <QVector>
+#include <QPluginLoader>
 #include "plugin-interface.h"
 
-class QString;
+class PluginDummy: public QObject{
+	Q_OBJECT
+
+public:
+	PluginDummy(QObject* parent = 0):QObject(parent){};
+
+signals:
+	void Initialized();
+public slots:
+	void SlotInitialized();
+};
+
+class Plugin: public QObject{
+	Q_OBJECT
+
+private:
+	QPluginLoader* pluginLoader;
+	PluginInterface* plugin;
+	PluginDummy* pluginDummy;
+
+public:
+	Plugin(QObject* parent = 0):QObject(parent){};
+	~Plugin();
+
+	PluginInterface* GetPlugin() const;
+	void Load(const QString& libname);
+	void Unload();
+
+public slots:
+	void Initialized();
+};
 
 class Plugins: public QObject{
 	Q_OBJECT
 private:
-	QVector<QPluginLoader*> pluginLoaders;
-	QVector<PluginInterface*> plugins;
+/* should use Q..List instead
+ *
+ */
+	QVector<Plugin*> plugins;
 
 public:
+	Plugins(QObject* parent/*= 0*/):QObject(parent){};
+	~Plugins();
+
 /* should rewrite to scan all plugins and check it versions
  *
  */
-	Plugins(QObject* parent = 0);
-	~Plugins();
+	void InitializeAll();
 
 	quint8 Count();
 
@@ -33,11 +68,9 @@ public:
 	PluginInterface* LoadPlugin(const QString& libname);
 	void UnloadPlugin(PluginInterface* plugin);
 
-	PluginInterface* Plugin(QString fullname) const;
-	PluginInterface* Plugin(quint8 position) const;
-
-public slots:
-	void Loaded();
+	// get PluginInterface* by it's (QObject's) name
+	PluginInterface* GetPlugin(QString fullname) const;
+	PluginInterface* GetPlugin(quint8 position) const;
 };
 
 #endif /* PLUGINS_H_ */

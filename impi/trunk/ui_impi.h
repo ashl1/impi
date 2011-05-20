@@ -21,44 +21,60 @@
 #include <QtGui/QStatusBar>
 #include <QtGui/QWidget>
 
-#include "plugin-interface.h"
-#include "plugins.h"
+class Plugin;
 
-namespace Impi{
-
-// initialize menu elements for plugin
+// This class represent plugin in GUI menu. It initialize menu entries for plugin (actions like Load, Open etc)
+// The submenu object (inside this class) has the objectName - the full name of the plugin needed to determine
+// client actions come from.
 class MenuPluginElement {
-private:
-	QMenu* main;
-	QAction* confPath;
-	QAction* filePath;
-
 public:
 	MenuPluginElement();
-	MenuPluginElement(QString pluginName, QWidget *parent = 0, bool confPath = false, bool filePath = false);
-	~MenuPluginElement();
+	// plugin_name- full name of plugin got from plugin and using in GUI and so on. For addition information
+	// see plugin-interface.h
+	// parent - parent widget
+	// conf_path - plugin could import from one file and open one file to show the user.
+	MenuPluginElement(const QString& plugin_name, bool can_init_from_conf_path, bool can_init_from_file, QMenuBar* parent = 0);
 
-	QAction* GetConfPath() const;
-	QAction* GetFilePath()const;
-	QMenu* GetMain()const;
+	// TODO(ashl1future): why getter is not const? Because text for them set in another. Reprogram this.
+	QMenu* submenu() const;
+	QAction* menu_element_for_conf_path() const;
+	QAction* menu_element_for_file_path() const;
+
+private:
+	// The submenu that will be created. Has the objectName - the full name of the plugin needed to determine
+	// client actions come from.
+	QMenu* submenu_;
+	// Menu element for action to import from messenger configuration path
+	QAction* menu_element_for_conf_path_;
+	// Menu element for action to import file
+	QAction* menu_element_for_file_path_;
 };
 
-class ImpiClass
+class ImpiGUI: public QObject
 {
+	Q_OBJECT
 public:
+	ImpiGUI(QObject* parent = 0): QObject(parent){};
+	~ImpiGUI(){};
 
-	QWidget *centralwidget;
-	QStatusBar *statusbar;
-	QMenuBar *menubar;
+    void SetupUi(QMainWindow *impi_class);
+    void RetranslateUi();
 
-	QVector<MenuPluginElement> plugins;
-	QMenu *load;
+public slots:
+	// Should be emitted when Plugin() changed or initialized: full name.
+	// Should be emitted only from Plugin class due its dependences
+	// Reinitialize it in menu, sort by full name
+	void PluginChanged();
 
-    void setupUi(QMainWindow *impiClass, Plugins* plugins);
+private:
+	QWidget *central_widget_;
+	QStatusBar *statusbar_;
+	QMenuBar *menubar_;
+	QMenu *load_menu_;
+	QMap<const Plugin*, MenuPluginElement> menu_plugins_;
 
-    void retranslateUi(QMainWindow *impiClass);
-
+	// Main window pointer. It is used for connect signals such as onWantConfPath and onWantFilePath
+	QMainWindow *main_window_;
 };
-} // namespace Impi
 
 #endif // UI_IMPI_H

@@ -1,54 +1,52 @@
-
-
 #include "impi.h"
 #include "dialogs/chooseAccount.h"
 
-Impi::Impi::Impi(QWidget *parent)
-    : QMainWindow(parent)
-{
-	plugins = new Plugins(this);
+void ImpiClass::Init() {
+	ui = new ImpiGUI(this);
+	ui->SetupUi(this);
+
+	plugins = new Plugins(ui, this);
 	plugins->InitializeAll();
-	ui.setupUi(this, plugins);
 }
 
-Impi::Impi::~Impi()
-{
-
-}
-
-void Impi::Impi::onWantConfPath(){
-	QString dirName = QFileDialog::getExistingDirectory(0, "", QDir::toNativeSeparators(QDir::homePath()+"/.Skype"),
+void ImpiClass::onWantConfPath(){
+	// 
+	QString dir_path = QFileDialog::getExistingDirectory(0, "", QDir::toNativeSeparators(QDir::homePath()+"/.Skype"),
 			QFileDialog::ShowDirsOnly);
-	if (dirName != ""){
+	if (dir_path != ""){
+		QDir dir;
+		// TODO(ashl1future): check for error
+		dir.cd(dir_path);
+
 		// parent because sender is a QAction which may be "conf path" or "file",
 		//    but only parent QMenu has object name
-		PluginInterface* plugin = plugins->GetPlugin(QObject::sender()->parent()->objectName());
+		plugins->GetPluginByName(sender()->parent()->objectName())->GetClientAccounts(dir);
 
 		// check for accounts
 	    QVector<QString> accNames;
 		QVector<QDir> accPathes;
 
-		plugin->GetClientAccounts(dirName, accPathes, accNames);
-		if (accNames.count() == 1)
-			plugin->InitFromConfPath(*accPathes.constBegin());
-		else{
-			ChooseAccountDialog* dialog = new ChooseAccountDialog(accNames);
-			if (dialog->exec() == QDialog::Accepted){
-				QVector<QDir>::const_iterator pIt = accPathes.constBegin();
-				for (QVector<QString>::const_iterator it = accNames.constBegin(); it != accNames.constEnd(); ++it){
-					if (dialog->Name() == *it)
-						break;
-					else
-						++pIt;
-				}
-				plugin->InitFromConfPath(*pIt);
-			}else
-				return;
-			delete dialog;
-		}
+//		plugin->GetClientAccounts(dirName, accPathes, accNames);
+//		if (accNames.count() == 1)
+//			plugin->InitFromConfPath(*accPathes.constBegin());
+//		else{
+//			ChooseAccountDialog* dialog = new ChooseAccountDialog(accNames);
+//			if (dialog->exec() == QDialog::Accepted){
+//				QVector<QDir>::const_iterator pIt = accPathes.constBegin();
+//				for (QVector<QString>::const_iterator it = accNames.constBegin(); it != accNames.constEnd(); ++it){
+//					if (dialog->Name() == *it)
+//						break;
+//					else
+//						++pIt;
+//				}
+//				plugin->InitFromConfPath(*pIt);
+//			}else
+//				return;
+//			delete dialog;
+//		}
 	}
 
 }
-void Impi::Impi::onWantFilePath(){
+void ImpiClass::onWantFilePath(){
 	;
 }

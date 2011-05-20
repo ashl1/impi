@@ -1,4 +1,5 @@
 TEMPLATE = app
+CONFIG += qt thread
 TARGET = impi
 QT += core \
     gui \
@@ -8,6 +9,7 @@ HEADERS += limit.h \
     dialogs/chooseAccount.h \
     plugins.h \
     plugin-interface.h \
+    ui_impi.h \
     error.h \
     impi.h
 SOURCES += objects.cpp \
@@ -15,7 +17,7 @@ SOURCES += objects.cpp \
     plugins.cpp \
     ui_impi.cpp \
     error.cpp \
-    main.cpp \
-    impi.cpp
+    impi.cpp \
+    main.cpp
 FORMS +=
 RESOURCES +=

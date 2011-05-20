@@ -13,17 +13,14 @@
 #include <QPushButton>
 #include <QVector>
 
-namespace Impi{
+class ChooseAccountDialog: public QDialog{
+	Q_OBJECT
+private:
+	QListWidget* list;
+public:
+	ChooseAccountDialog(QVector<QString>& values, QWidget* parent = 0);
 
-	class ChooseAccountDialog: public QDialog{
-		Q_OBJECT
-	private:
-		QListWidget* list;
-	public:
-		ChooseAccountDialog(QVector<QString>& values, QWidget* parent = 0);
-
-		QString Name() const;
-	};
-} // namespace Impi
+	QString Name() const;
+};
 
 #endif /* CHOOSEACCOUNT_H_ */

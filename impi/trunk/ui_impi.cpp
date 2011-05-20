@@ -5,115 +5,131 @@
  *      Author: ashl1
  */
 
+#include <QList>
+#include <QDebug>
 #include "ui_impi.h"
+#include "plugins.h"
+#include "impi.h"
 
-using ::Impi::MenuPluginElement;
-using ::Impi::ImpiClass;
-
-MenuPluginElement::MenuPluginElement(){
-	main = 0;
-	confPath = 0;
-	filePath = 0;
+MenuPluginElement::MenuPluginElement() {
+	submenu_ = 0;
+	menu_element_for_conf_path_ = 0;
+	menu_element_for_file_path_ = 0;
 }
 
-MenuPluginElement::MenuPluginElement(QString pluginName, QWidget *parent, bool confPath, bool filePath){
-	main = new QMenu(parent);
-	main->setObjectName(pluginName);
+MenuPluginElement::MenuPluginElement(const QString& plugin_name, bool can_init_from_conf_path,
+		bool can_init_from_file, QMenuBar* parent) {
+	submenu_ = new QMenu(parent);
+	submenu_->setObjectName(plugin_name);
 
-	this->confPath = 0;
-	this->filePath = 0;
+	this->menu_element_for_conf_path_ = 0;
+	this->menu_element_for_file_path_ = 0;
 
-	if (confPath){
-		this->confPath = new QAction(main);
-		main->addAction(this->confPath);
+	if (can_init_from_conf_path){
+		this->menu_element_for_conf_path_ = new QAction(submenu_);
+		submenu_->addAction(this->menu_element_for_conf_path_);
 	}
-	if (filePath){
-		this->filePath = new QAction(main);
-		main->addAction(this->filePath);
+	if (can_init_from_file){
+		this->menu_element_for_file_path_ = new QAction(submenu_);
+		submenu_->addAction(this->menu_element_for_file_path_);
 	}
 }
 
-MenuPluginElement::~MenuPluginElement(){
-/* is this right? Because QAction have parent impiClass, and when parent destroys, QAction also destroys
-*
-*/
-//		if (confPath)
-//			confPath->~QAction();
-//		if (filePath)
-//			filePath->~QAction();
+QAction* MenuPluginElement::menu_element_for_conf_path() const {
+	return menu_element_for_conf_path_;
 }
 
-QAction* MenuPluginElement::GetConfPath() const{
-	return confPath;
+QAction* MenuPluginElement::menu_element_for_file_path() const {
+	return menu_element_for_file_path_;
 }
 
-QAction* MenuPluginElement::GetFilePath()const{
-	return filePath;
+QMenu* MenuPluginElement::submenu() const {
+	return submenu_;
 }
 
-QMenu* MenuPluginElement::GetMain()const{
-	return main;
-}
+///////////////////////////////////////////////////////////
 
-void ImpiClass::setupUi(QMainWindow *impiClass, Plugins* plugins){
-	if (impiClass->objectName().isEmpty())
-		impiClass->setObjectName(QString::fromUtf8("impiClass"));
-	impiClass->resize(800, 600);
+void ImpiGUI::SetupUi(QMainWindow *impi_class) {
+	main_window_ = impi_class;
+
+	if (main_window_->objectName().isEmpty())
+		main_window_->setObjectName(QString::fromUtf8("impiClass"));
+	main_window_->resize(800, 600);
 
 	// menu bar
-	menubar = new QMenuBar(impiClass);
-	menubar->setObjectName(QString::fromUtf8("menubar"));
-	menubar->setGeometry(QRect(0, 0, 800, 25));
+	menubar_ = new QMenuBar(main_window_);
+	menubar_->setObjectName(QString::fromUtf8("menubar"));
+	menubar_->setGeometry(QRect(0, 0, 800, 25));
 
-	load = new QMenu(menubar);
-	load->setObjectName("load");
+	load_menu_ = new QMenu(menubar_);
+	load_menu_->setObjectName("load");
 
-	for(quint8 i = 0; i < plugins->Count(); ++i)
-		this->plugins.append(MenuPluginElement(plugins->GetPlugin(i)->FullName(), menubar,
-				true, plugins->GetPlugin(i)->CanInitFromFile()));
-
-	impiClass->setMenuBar(menubar);
-
-	menubar->addAction(load->menuAction());
-
-	foreach(MenuPluginElement elem, this->plugins)
-		load->addAction(elem.GetMain()->menuAction());
+	main_window_->setMenuBar(menubar_);
+	menubar_->addAction(load_menu_->menuAction());
 
 	// statusbar
-	statusbar = new QStatusBar(impiClass);
-	statusbar->setObjectName(QString::fromUtf8("statusbar"));
-	impiClass->setStatusBar(statusbar);
+	statusbar_ = new QStatusBar(main_window_);
+	statusbar_->setObjectName(QString::fromUtf8("statusbar"));
+	main_window_->setStatusBar(statusbar_);
 
-	centralwidget = new QWidget(impiClass);
-	centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
-	impiClass->setCentralWidget(centralwidget);
+	central_widget_ = new QWidget(main_window_);
+	central_widget_->setObjectName(QString::fromUtf8("centralwidget"));
+	main_window_->setCentralWidget(central_widget_);
 
-	retranslateUi(impiClass);
+	RetranslateUi();
 
 	// connect slots
-	QMetaObject::connectSlotsByName(impiClass);
-
-	// connect from "load" submenu
-	foreach(MenuPluginElement elem, this->plugins){
-		if (elem.GetConfPath())
-			QObject::connect(elem.GetConfPath(), SIGNAL(triggered()), impiClass, SLOT(onWantConfPath()));
-		if (elem.GetFilePath())
-			QObject::connect(elem.GetFilePath(), SIGNAL(triggered()), impiClass, SLOT(onWantFilePath()));
-	}
+	QMetaObject::connectSlotsByName(main_window_);
 } // setupUi
 
-void ImpiClass::retranslateUi(QMainWindow *impiClass){
-	impiClass->setWindowTitle("Impi");
+void ImpiGUI::RetranslateUi(){
+	main_window_->setWindowTitle("Impi");
 
-	load->setTitle(QObject::tr("Load"));
-
-	QString title;
-	foreach(MenuPluginElement elem, plugins){
-		title = elem.GetMain()->objectName();
-		elem.GetMain()->setTitle(title);
-		if (elem.GetConfPath())
-			elem.GetConfPath()->setText("Choose folder");
-		if (elem.GetFilePath())
-			elem.GetFilePath()->setText("Choose file");
-	}
+	load_menu_->setTitle(QObject::tr("Load"));
 } // retranslateUi
+
+void ImpiGUI::PluginChanged(){
+	const Plugin* sender_plugin = qobject_cast<Plugin* >(sender());
+	if (menu_plugins_.find(sender_plugin) != menu_plugins_.end()){
+		load_menu_->removeAction(menu_plugins_.find(sender_plugin)->submenu()->menuAction());
+	}
+
+	menu_plugins_[sender_plugin] = MenuPluginElement(sender_plugin->fullname(), sender_plugin->can_init_from_conf_path(),
+			sender_plugin->can_init_from_file(), menubar_);
+	MenuPluginElement* menu_plugin_element = &menu_plugins_[sender_plugin];
+
+	// connect "load" submenu
+	if (menu_plugin_element->menu_element_for_conf_path())
+		connect(menu_plugin_element->menu_element_for_conf_path(), SIGNAL(triggered()), main_window_, SLOT(onWantConfPath()));
+	if (menu_plugin_element->menu_element_for_file_path())
+		connect(menu_plugin_element->menu_element_for_file_path(), SIGNAL(triggered()), main_window_, SLOT(onWantFilePath()));
+
+	// set titles
+	QString title;
+	title = menu_plugin_element->submenu()->objectName();
+	menu_plugin_element->submenu()->setTitle(title);
+	if (menu_plugin_element->menu_element_for_conf_path())
+		menu_plugin_element->menu_element_for_conf_path()->setText("Choose folder");
+	if (menu_plugin_element->menu_element_for_file_path())
+		menu_plugin_element->menu_element_for_file_path()->setText("Choose file");
+
+	// search for place to insert
+	QMenu* menu_before = NULL;
+	QString max_title;
+	// find max title first
+	foreach(MenuPluginElement elem, menu_plugins_.values()) {
+		if (elem.submenu()->objectName() > max_title)
+			max_title = elem.submenu()->objectName();
+	}
+	// find beforeAction
+	foreach(MenuPluginElement elem, menu_plugins_.values()) {
+		if ((title < elem.submenu()->objectName()) && (elem.submenu()->objectName() < max_title)) {
+			menu_before = elem.submenu();
+			max_title = elem.submenu()->objectName();
+		}
+	}
+	if (menu_before)
+		load_menu_->insertAction(menu_before->menuAction(), menu_plugin_element->submenu()->menuAction());
+	else
+		load_menu_->addAction(menu_plugin_element->submenu()->menuAction());
+}

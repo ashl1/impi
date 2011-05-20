@@ -10,17 +10,15 @@
 
 #include <QString>
 
-namespace Impi{
+class Error {
+public:
+	quint16 type;
+	QString text;
 
-	class Error {
-	public:
-		quint16 type;
-		QString text;
-
-	public:
-		Error(quint16 type, QString text);
-		Error(quint16 type);
-	};
+public:
+	Error(quint16 type, QString text);
+	Error(quint16 type);
+};
 
 /* Types of errors
 * 1 - should reserved for unexpected error
@@ -31,6 +29,5 @@ namespace Impi{
 * 5 - The resource is busy
 * 6 - Cannot load the file
  */
-} // namespace Impi
 
 #endif /* ERROR_H_ */

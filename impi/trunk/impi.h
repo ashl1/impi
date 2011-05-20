@@ -10,23 +10,24 @@
 #include "plugin-interface.h"
 #include "plugins.h"
 
-namespace Impi{
-
-class Impi : public QMainWindow
+class ImpiClass : public QMainWindow
 {
     Q_OBJECT
 
 private:
-    ImpiClass ui;
+    ImpiGUI* ui;
     Plugins* plugins;
 public:
-    Impi(QWidget *parent = 0);
-    ~Impi();
+    ImpiClass(QWidget *parent = 0): QMainWindow(parent){};
+    ~ImpiClass(){};
+
+    void Init();
+
+    void GotAccounts();
 
 public slots:
 	void onWantConfPath();
 	void onWantFilePath();
 };
-} // namespace Impi
 
 #endif // IMPI_H

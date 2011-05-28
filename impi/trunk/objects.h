@@ -26,44 +26,60 @@ class PluginUser;
 
 ///////////////////////////////////////////////////////////
 
-class PluginAccount{
+class PluginAccount {
 public:
-	// get number in qvector
-	virtual quint32 GetNumber() const = 0;
+	PluginAccount(const QString& name, const PluginProtocol* protocol, const PluginUser* user):
+		name_(name), protocol_(protocol), user_(user) {};
 
-	virtual PluginProtocol* GetProtocol() const = 0;
-	virtual PluginUser* GetUser() const = 0;
+	const QString name_;
+	const PluginProtocol* protocol_;
+	const PluginUser* user_;
 };
 
-class PluginChat{
+class PluginChat {
 public:
-	virtual QDateTime GetStartTime() const = 0;
-	virtual QDateTime GetModifiedTime() const = 0;
+	PluginChat(const QDateTime& modified_time, const QDateTime& start_time):
+		modified_time_(modified_time), start_time_(start_time) {};
+
+	const QDateTime modified_time_;
+	const QDateTime start_time_;
 };
 
-class PluginClient{
+class PluginClient {
 public:
-	virtual QString GetName() const = 0;
+	PluginClient(const QString& name): name_(name) {};
+
+	const QString name_;
 };
 
-class PluginMessage{
+class PluginMessage {
 public:
-	virtual QDateTime GetTime() const = 0;
-	virtual QString GetBody() const = 0;
+	PluginMessage(const PluginAccount* account, const QString& body, const PluginChat* chat,
+			const PluginClient* client, const QDateTime& time):
+		account_(account), body_(body), chat_(chat), client_(client), time_(time) {};
 
-	virtual PluginAccount* GetAccount() const = 0;
-	virtual PluginClient* GetClient() const = 0;
+	const PluginAccount* account_;
+	const QString body_;
+	const PluginChat* chat_;
+	const PluginClient* client_;
+	const QDateTime time_;
 };
 
-class PluginProtocol{
+class PluginProtocol {
 public:
-	virtual QString GetName() const = 0;
-	// get number in qvector
-	virtual quint32 GetNumber() const = 0;
+	PluginProtocol(const QString& name): name_(name) {};
+
+	const QString name_;
 };
 
-class PluginUser{
+class PluginUser {
+public:
+	PluginUser(const QString& firstname, const QString& lastname, const QString& middlename):
+		firstname_(firstname), lastname_(lastname), middlename_(middlename) {};
 
+	const QString firstname_;
+	const QString lastname_;
+	const QString middlename_;
 };
 
 ///////////////////////////////////////////////////////////

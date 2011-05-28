@@ -80,7 +80,7 @@ void ImportClass::Init(QString plugin_fullpath) {
 	plugin_loader_ = new QPluginLoader(plugin_fullpath, this);
 	plugin_ = qobject_cast<PluginInterface *>(plugin_loader_->instance());
 	if (plugin_loader_->isLoaded()) {
-		emit Initialized(plugin_->FullName());
+		emit Initialized(plugin_->full_name());
 	} else {
 		;// TODO(ashl1future): handle this throw Error(6, QString("Plugin: ") + plugin_loader_->errorString());
 		qDebug() << plugin_loader_->errorString();

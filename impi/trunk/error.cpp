@@ -7,8 +7,6 @@
 
 #include "error.h"
 
-using ::Impi::Error;
-
 Error::Error(quint16 type, QString text):type(type){
 	this->text = text;
 }

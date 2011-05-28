@@ -26,7 +26,7 @@ void ImpiClass::onWantConfPath(){
 	    QVector<QString> accNames;
 		QVector<QDir> accPathes;
 
-//		plugin->GetClientAccounts(dirName, accPathes, accNames);
+//		plugin->GetUserAccounts(dirName, accPathes, accNames);
 //		if (accNames.count() == 1)
 //			plugin->InitFromConfPath(*accPathes.constBegin());
 //		else{

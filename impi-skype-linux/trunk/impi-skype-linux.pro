@@ -4,6 +4,6 @@ CONFIG += plugin
 QT += core
 QT -= gui
 HEADERS += skype-linux.h \
-	../impi/plugin-interface.h
+    ../impi/plugin-interface.h
 SOURCES += skype-linux.cpp
 DESTDIR = ../impi/plugins

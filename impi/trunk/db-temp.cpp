@@ -17,11 +17,22 @@
 #include "plugins.h"
 
 bool DBTemp::importOrDie(const QList<PluginMessage*> messages) {
-	QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+	db = QSqlDatabase::addDatabase("QSQLITE");
 	QString db_absolute_path = QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("db");
 	db.setDatabaseName(QDir::toNativeSeparators(db_absolute_path));
 	qDebug() << (db.open()? "Db opened": "Error while opening db");
-	//query.setForwardOnly(true);
+	if (IsValidDB()) {
+		qDebug() << "valid DB";
+	} else {
+		qDebug() << "invalid DB";
+		MakeDB();
+	}
+
+	QSqlQuery query;
+	query.setForwardOnly(true);
+
+	// create if needed
+
 
 	QMap<const PluginChat*, quint64> chats_in_db;
 	QMap<const void*, quint64> used;
@@ -36,79 +47,85 @@ bool DBTemp::importOrDie(const QList<PluginMessage*> messages) {
 			messages_iterator != messages.end(); ++messages_iterator) {
 		const PluginAccount* account = (*messages_iterator)->account_;
 
-		QSqlQuery query;
-
 		// account
 		quint64 account_id;
 		if (used.find((const void*)account) != used.end()) {
-	//		query.prepare("SELECT id FROM Accounts WHERE protocolId = :protocolId and userId = :userId");
-	//		query.bindValue(":protocolId", protocol_id);
-	//		query.bindValue(":userId", user_id);
-	//		query.exec();
-	//		if (query.next()) {
-	//			account_id = query.value(0).toULongLong();
 			account_id = used[(const void*)account];
 		} else {
 			// protocol
 			quint64 protocol_id;
 			if (used.find((const void*)account->protocol_) != used.end()) {
-	//		query.prepare("SELECT id FROM protocols WHERE name = :name");
-	//		query.bindValue(":name", account->protocol_->name_);
-	//		query.exec();
-	//		if (query.next()) {
-	//			protocol_id = query.value(0).toULongLong();
 				protocol_id = used[(const void*)account->protocol_];
 			} else {
-				query.prepare("INSERT INTO Protocols(name) VALUES(:name)");
+				query.prepare("SELECT id FROM protocols WHERE name = :name");
 				query.bindValue(":name", account->protocol_->name_);
 				query.exec();
-				protocol_id = query.lastInsertId().toULongLong();
-				used[(const void*)account->protocol_] = protocol_id;
+				if (query.next()) {
+					protocol_id = query.value(0).toULongLong();
+				} else {
+					query.prepare("INSERT INTO Protocols(name) VALUES(:name)");
+					query.bindValue(":name", account->protocol_->name_);
+					query.exec();
+					protocol_id = query.lastInsertId().toULongLong();
+					used[(const void*)account->protocol_] = protocol_id;
+				}
 			}
 	//		qDebug() << "prot" << protocol_id;
 
 			// user
 			quint64 user_id;
 			if (used.find((const void*)account->user_) != used.end()) {
-	//		query.prepare("SELECT id FROM Users WHERE firstName = :name");
-	//		query.bindValue(":name", account->user_->firstname_);
-	//		query.exec();
-	//		if (query.next()) {
-	//			user_id = query.value(0).toULongLong();
 				user_id = used[(const void*)account->user_];
 			} else {
-				query.prepare("INSERT INTO Users(firstName) VALUES(:name)");
+				query.prepare("SELECT id FROM Users WHERE firstName = :name");
 				query.bindValue(":name", account->user_->firstname_);
 				query.exec();
-				user_id = query.lastInsertId().toULongLong();
-				used[(const void*)account->user_] = user_id;
+				if (query.next()) {
+					user_id = query.value(0).toULongLong();
+				} else {
+					query.prepare("INSERT INTO Users(firstName) VALUES(:name)");
+					query.bindValue(":name", account->user_->firstname_);
+					query.exec();
+					user_id = query.lastInsertId().toULongLong();
+					used[(const void*)account->user_] = user_id;
+				}
 			}
-	//		qDebug() << "user" << user_id;
+//			qDebug() << "user" << user_id;
 
-			query.prepare("INSERT INTO Accounts(protocolID, userID) VALUES(:protocolID, :userID)");
-			query.bindValue(":protocolID", protocol_id);
-			query.bindValue(":userID", user_id);
+			query.prepare("SELECT id FROM Accounts WHERE protocolId = :protocolId and userId = :userId");
+			query.bindValue(":protocolId", protocol_id);
+			query.bindValue(":userId", user_id);
 			query.exec();
-			account_id = query.lastInsertId().toULongLong();
-			used[(const void*)account] = account_id;
+			if (query.next()) {
+				account_id = query.value(0).toULongLong();
+			} else {
+				query.prepare("INSERT INTO Accounts(protocolID, userID) VALUES(:protocolID, :userID)");
+				query.bindValue(":protocolID", protocol_id);
+				query.bindValue(":userID", user_id);
+				query.exec();
+				account_id = query.lastInsertId().toULongLong();
+				used[(const void*)account] = account_id;
+			}
 		}
 //		qDebug() << "account" << account_id;
 
 		// client
 		quint64 client_id;
 		if (used.find((const void*)(*messages_iterator)->client_) != used.end()) {
-//		query.prepare("SELECT id FROM Clients WHERE name = :name");
-//		query.bindValue(":name", (*messages_iterator)->client_->name_);
-//		query.exec();
-//		if (query.next()) {
-//			client_id = query.value(0).toULongLong();
 			client_id = used[(*messages_iterator)->client_];
 		} else {
-			query.prepare("INSERT INTO Clients(name) VALUES(:name)");
+			query.prepare("SELECT id FROM Clients WHERE name = :name");
 			query.bindValue(":name", (*messages_iterator)->client_->name_);
 			query.exec();
-			client_id = query.lastInsertId().toULongLong();
-			used[(*messages_iterator)->client_] = client_id;
+			if (query.next()) {
+				client_id = query.value(0).toULongLong();
+			} else {
+				query.prepare("INSERT INTO Clients(name) VALUES(:name)");
+				query.bindValue(":name", (*messages_iterator)->client_->name_);
+				query.exec();
+				client_id = query.lastInsertId().toULongLong();
+				used[(*messages_iterator)->client_] = client_id;
+			}
 		}
 //		qDebug() << "client" << client_id;
 
@@ -147,4 +164,55 @@ bool DBTemp::importOrDie(const QList<PluginMessage*> messages) {
 
 	db.close();
 	return true;
+}
+
+bool DBTemp::IsValidDB() const {
+	QSqlQuery query;
+	query.setForwardOnly(true);
+	if (!query.exec("SELECT count(*) FROM sqlite_master WHERE type='table' and"
+			"(name = 'accounts' or name = 'chats' or name = 'clients' or name = 'messages' or"
+			"name = 'protocols' or name = 'users')"))
+		return false;
+	if (!query.next())
+		return false;
+	if (query.value(0).toInt() == 6)
+		return true;
+	else
+		return false;
+}
+
+void DBTemp::MakeDB() const {
+	QSqlQuery query;
+	query.exec("CREATE TABLE 'CHATS' ("
+			"'id' INTEGER PRIMARY KEY ASC,"
+			"'timeLastModified' INTEGER,"
+			"'timeStart' INTEGER"
+			");");
+	query.exec("CREATE TABLE 'CLIENTS' ("
+			"'id' INTEGER PRIMARY KEY ASC,"
+			"'Name' TEXT UNIQUE NOT NULL"
+			");");
+	query.exec("CREATE TABLE 'PROTOCOLS' ("
+			"'id' INTEGER PRIMARY KEY ASC,"
+			"'name' TEXT UNIQUE NOT NULL"
+			");");
+	query.exec("CREATE TABLE 'USERS' ("
+			"'id' INTEGER PRIMARY KEY ASC,"
+			"'firstName' TEXT,"
+			"'middlename' TEXT,"
+			"'soname' TEXT"
+			");");
+	query.exec("CREATE TABLE 'ACCOUNTS' ("
+			"'id' INTEGER PRIMARY KEY ASC,"
+			"'protocolID' INTEGER NOT NULL REFERENCES PROTOCOLS(id) ON DELETE RESTRICT ON UPDATE CASCADE,"
+			"'userID' INTEGER NOT NULL REFERENCES USERS(id) ON DELETE RESTRICT ON UPDATE CASCADE"
+			");");
+	query.exec("CREATE TABLE 'MESSAGES' ("
+			"'id' INTEGER PRIMARY KEY,"
+			"'accountID' INTEGER NOT NULL REFERENCES ACCOUNTS(id)  ON DELETE RESTRICT ON UPDATE CASCADE,"
+			"'body' TEXT,"
+			"'chatID' INTEGER NOT NULL REFERENCES CHATS(id)  ON DELETE RESTRICT ON UPDATE CASCADE,"
+			"'clientID' INTEGER NOT NULL REFERENCES CLIENTS(id)  ON DELETE RESTRICT ON UPDATE CASCADE,"
+			"'time' INTEGER"
+			");");
 }

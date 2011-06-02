@@ -9,6 +9,7 @@
 #define DBTEMP_H_
 
 #include <QObject>
+#include <QSqlDatabase>
 
 class PluginMessage;
 
@@ -23,8 +24,10 @@ public:
 	bool importOrDie(const QList<PluginMessage*> messages);
 
 private:
+	bool IsValidDB() const;
+	void MakeDB() const;
 
-
+	QSqlDatabase db;
 };
 
 #endif /* DBTEMP_H_ */

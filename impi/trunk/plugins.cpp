@@ -28,9 +28,9 @@ void ImportClass::ChoosedAccount(QString directory_path) {
 	plugin_->working_dir(directory_path);
 	// TODO(ashl1future): Choose from DB saved settings. In DB the directory and the machine ID should be specified
 	// to determine if the current path the same.
-	QDateTime time_from(QDate(2001, 06, 01), QTime(16, 04, 00), Qt::UTC);
+	QDateTime time_from(QDate(2011, 04, 01), QTime(16, 04, 00), Qt::UTC);
 	// TODO(ashl1future): Choose from settings or by compile macro in different platforms
-	quint64 max_messages_size = 800000;
+	quint64 max_messages_size = 500;
 
 	DBTemp* dbtemp = new DBTemp(this);
 

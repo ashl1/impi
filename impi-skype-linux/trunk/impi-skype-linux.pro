@@ -1,6 +1,7 @@
 TEMPLATE = lib
 TARGET = impi-skype-linux
-CONFIG += plugin
+CONFIG += plugin release
+VERSION = 0.1
 QT += core
 QT -= gui
 HEADERS += skype-linux.h \

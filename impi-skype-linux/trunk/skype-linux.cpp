@@ -19,9 +19,13 @@
 using ::SkypeLinux::PluginSkypeLinux;
 
 const bool PluginSkypeLinux::can_init_from_file_ = false;
+// TODO(ashl1future): do we need to set time zone?
+// Skype starts time from 10 of January 2004 17:37:04
+const QDateTime PluginSkypeLinux::datetime_start_ = QDateTime(QDate(2004, 01, 10), QTime(17, 37, 04), Qt::UTC);
 const QString PluginSkypeLinux::full_name_ = QString("Skype Linux");
 const QString PluginSkypeLinux::major_name_ = QString("Skype");
 const QString PluginSkypeLinux::minor_name_ = QString("Linux");
+const PluginProtocol* PluginSkypeLinux::protocol_ = new PluginProtocol("Skype");
 const QString PluginSkypeLinux::version_ = QString("0.1");
 
 // TODO(ashl1future): use macros
@@ -42,7 +46,7 @@ const char PluginSkypeLinux::sender_login_header_char_[kSenderLoginHeaderLength]
 const QByteArray PluginSkypeLinux::sender_login_header_ = QByteArray(sender_login_header_char_, kSenderLoginHeaderLength);
 
 PluginSkypeLinux::PluginSkypeLinux(QObject *parent)
-    : QObject(parent), client_(NULL), protocol_(NULL)
+    : QObject(parent), client_(NULL), error_(0), working_dir_(QDir::root())
 {
 }
 
@@ -53,15 +57,23 @@ PluginSkypeLinux::PluginSkypeLinux(QObject *parent)
 	return can_init_from_file_;
 }
 
+/*virtual */ quint32 PluginSkypeLinux::error() const {
+	return error_;
+}
+
+/*virtual */ QString PluginSkypeLinux::error_string() const {
+	return error_string_;
+}
+
 /*virtual */ QString PluginSkypeLinux::full_name() const {
 	return full_name_;
 }
 
-/*virtual */ QString PluginSkypeLinux::GetHomePath() const {
+/*virtual */ QDir PluginSkypeLinux::GetHomePath() const {
 	// Because only in Linux
 	QDir dir = QDir::home();
 	dir.cd(".Skype");
-	return dir.path();
+	return dir;
 }
 
 /*virtual */ bool PluginSkypeLinux::GetNextMessagesOrDie(const QDateTime& time_from,
@@ -69,7 +81,7 @@ PluginSkypeLinux::PluginSkypeLinux(QObject *parent)
 	/* The solution:
 	 *
 	 * 1. 'date_last_exported_' = 'time_from'
-	 * 2. Initialize messages_*_ structures and read the message from the stream until >= date_last_exported_.
+	 * 2. Initialize messages_*_ structures and read the message from the stream till > date_last_exported_.
 	 * 3. Get the numbers in list of messages_*_ which are the earliest. It could be one or several.
 	 * 4. Check the size not exceeded max_messages_size of all the messages from the previous step to be exported.
 	 * 5. 'date_last_exported_' = the date of the earliest messages from step 3.
@@ -80,20 +92,24 @@ PluginSkypeLinux::PluginSkypeLinux(QObject *parent)
 	 *
 	 */
 
-	// TODO(ashl1future)
-	//MessagesClean();
-
+	MessagesClean();
 	if (messages.count() != 0) {
 		// TODO(ashl1future): report error
+		error_ = 1;
 		return false;
 	}
 
-	if (!working_dir_.exists())
+	// Check is working_dir_ set and exist
+	if (working_dir_.isRoot() || !working_dir_.exists()) {
+		// TODO(ashl1future): report error
+		error_ = 2;
 		return false;
+	}
 
 	// 2. Initialize messages_*_ structures
 	if (!InitMesssagesStructuresOrDie()) {
 		// TODO(ashl1ifuture): report error
+		error_ = 3;
 		return false;
 	}
 
@@ -101,12 +117,11 @@ PluginSkypeLinux::PluginSkypeLinux(QObject *parent)
 	QDateTime date_last_exported_ = time_from;
 	quint64 exported_messages_size_ = 0;
 
-	// 2. Read the message from the stream until >= date_last_exported_
-	quint32 i = 0;
-	QList<QDataStream*>::iterator streams_iterator = message_streams_.begin();
-	for (; streams_iterator != message_streams_.end(); ++i, ++streams_iterator) {
+	// 2. Read the message from the stream till > date_last_exported_
+	for (quint32 i = 0; i != message_streams_.count(); ++i) {
 		if (!ReadMessageOrDie(i, date_last_exported_)) {
 			// TODO(ashl1future): report error
+			error_ = 4;
 			return false;
 		}
 	}
@@ -119,7 +134,7 @@ PluginSkypeLinux::PluginSkypeLinux(QObject *parent)
 		numbers_earliest_messages = GetNumbersEarliestMessages();
 
 		if (numbers_earliest_messages.count() == 0) {
-			// cannot found messages with date >= 'time_from'
+			// cannot found messages with date > 'time_from'
 			can_export = false;
 		} else {
 			// 4. Check the size not exceeded max_messages_size of all the messages from the previous step to be exported.
@@ -130,7 +145,7 @@ PluginSkypeLinux::PluginSkypeLinux(QObject *parent)
 
 			can_export = exported_messages_size_ + bodies_size <= max_messages_size;
 			if (first_time_run && !can_export) {
-				// TODO(ashl1future): report error
+				// TODO(ashl1future): report error because cannot export due the little max_message_size
 				return false;
 			}
 			if (can_export) {
@@ -160,6 +175,7 @@ PluginSkypeLinux::PluginSkypeLinux(QObject *parent)
 	qDebug() << chats_.count() << "chats";
 	// 9. Clean messages_*_ structures
 	UninitMessagesStructures();
+
 	return true;
 }
 
@@ -174,6 +190,9 @@ PluginSkypeLinux::PluginSkypeLinux(QObject *parent)
 	pathes.clear();
 	names.clear();
 	foreach(QString dirName, path.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name)) {
+		// skip Skype system folders
+		if (dirName == "shared_dynco" or dirName == "shared_httpfe")
+			continue;
 		names.append(dirName);
 		QDir dir(path);
 		dir.cd(dirName);
@@ -255,10 +274,7 @@ void PluginSkypeLinux::ReadDateTime(const QByteArray& source, quint32 from, QDat
 	d1 = d1 << 7;
 	d2 = d2 << 14;
 	d3 = d3 << 21;
-	// TODO(ashl1future): do we need to set time zone?
-	// Skype starts time from 10 of January 2004 17:37:04
-	datetime = QDateTime(QDate(2004, 01, 10), QTime(17, 37, 04), Qt::UTC);
-	datetime = datetime.addSecs(d0 + d1 + d2 + d3);
+	datetime = datetime_start_.addSecs(d0 + d1 + d2 + d3);
 }
 
 bool PluginSkypeLinux::ReadUtf8StringOrDie(const QByteArray& source, quint32 from, QString& string) {
@@ -289,29 +305,6 @@ bool PluginSkypeLinux::GetAccountOrDie(const QString& login_name, PluginAccount*
 	}
 	account = accounts_[login_name];
 	return true;
-}
-
-QList<quint32> PluginSkypeLinux::GetNumbersEarliestMessages() const {
-	QList<quint32> result;
-	QDateTime earliest_datetime;
-	QDateTime null_datetime;
-	quint32 i = 0;
-	while (i < (quint32)messages_dates_.count() && messages_dates_[i] == null_datetime)
-		++i;
-	if (i < (quint32)messages_dates_.count()) {
-		earliest_datetime = messages_dates_[i];
-		result.append(i);
-	}
-	for (++i; i < (quint32)messages_dates_.count(); ++i) {
-		if (messages_dates_[i] == earliest_datetime) {
-			result.append(i);
-		} else if (messages_dates_[i] < earliest_datetime && messages_dates_[i] != null_datetime){
-			earliest_datetime = messages_dates_[i];
-			result.clear();
-			result.append(i);
-		}
-	}
-	return result;
 }
 
 bool PluginSkypeLinux::GetChatOrDie(const QString& chat_id, PluginChat*& chat_skype_linux) {
@@ -383,6 +376,29 @@ bool PluginSkypeLinux::GetChatOrDie(const QString& chat_id, PluginChat*& chat_sk
 	}
 }
 
+QList<quint32> PluginSkypeLinux::GetNumbersEarliestMessages() const {
+	QList<quint32> result;
+	QDateTime earliest_datetime;
+	quint32 i = 0;
+	// skip streams with no found messages. NULL is set in ReadMessageOrDie method.
+	while (i < (quint32)messages_dates_.count() && messages_[i] == NULL)
+		++i;
+	if (i < (quint32)messages_dates_.count()) {
+		earliest_datetime = messages_dates_[i];
+		result.append(i);
+	}
+	for (++i; i < (quint32)messages_dates_.count(); ++i) {
+		if (messages_dates_[i] == earliest_datetime) {
+			result.append(i);
+		} else if (messages_dates_[i] < earliest_datetime && messages_[i] != NULL){
+			earliest_datetime = messages_dates_[i];
+			result.clear();
+			result.append(i);
+		}
+	}
+	return result;
+}
+
 bool PluginSkypeLinux::GetUserOrDie(const QString& login_name, PluginUser*& user) {
 	// TODO(ashl1future): read it from user*.dbb files
 	user = new PluginUser(login_name, login_name, login_name);
@@ -443,6 +459,13 @@ bool PluginSkypeLinux::InitMesssagesStructuresOrDie() {
 		message_streams_.append(stream);
 	}
 	return true;
+}
+
+void PluginSkypeLinux::MessagesClean() {
+	for (QList<PluginMessage*>::iterator messages_iterator = messages_to_export_.begin();
+			messages_iterator != messages_to_export_.end(); ++messages_iterator)
+		delete *messages_iterator;
+	messages_to_export_.clear();
 }
 
 bool PluginSkypeLinux::ReadMessageOrDie(quint32 number_in_vector_, const QDateTime& time_from) {
@@ -508,7 +531,7 @@ bool PluginSkypeLinux::ReadMessageOrDie(quint32 number_in_vector_, const QDateTi
 		}
 		// TODO(ashl1future): report error
 		ReadDateTime(skype_block, strpos + kDateHeaderLength, time);
-		if (time >= time_from) {
+		if (time > time_from) {
 			strpos = skype_block.indexOf(sender_login_header_, strpos);
 			if (strpos < 0) {
 				// TODO(ashl1future): report error
@@ -553,12 +576,6 @@ bool PluginSkypeLinux::ReadMessageOrDie(quint32 number_in_vector_, const QDateTi
 	}
 
 	return true;
-}
-
-PluginProtocol* PluginSkypeLinux::protocol() {
-	if (!protocol_)
-		protocol_ = new PluginProtocol("Skype");
-	return protocol_;
 }
 
 void PluginSkypeLinux::UninitMessagesStructures() {

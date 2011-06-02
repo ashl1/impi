@@ -33,17 +33,19 @@ public:
 	virtual ~PluginSkypeLinux();
 
 	virtual bool can_init_from_file() const;
+	virtual quint32 error() const;
+	virtual QString error_string() const;
 	virtual QString full_name() const;
-	virtual QString GetHomePath() const;
-	// The function find for messages from 'time_from' (included 'time_from') and not exceeded 'max_messages_size' size in bytes
+	virtual QDir GetHomePath() const;
+	// The function find for messages from 'time_from' (not included 'time_from') and not exceeded 'max_messages_size' size in bytes
 	// and set it in 'message' argument after clear.
 	// If cannot return at least one message due the small 'max_message_size' generate the error with according status.
 	// It means that the error status will be set if the next message after or at 'time_from'
 	// cannot be returned due 'max_message_size'.
 	// The method also set 'last_message_time' to the last returned message datetime.
 	// Method guarantee that messages sorted by date ascending (if dates the same the will be in any order).
-	// Method guarantee that no messages with date before the last returned message date returned kept in the history files,
-	// so it's correct to next execute method with 'time_from' set to the last returned message date.
+	// Method guarantee that no messages with date before or equeal the last returned message date kept in the history files,
+	// so it's correct to next execute method with 'time_from' set to the last returned message date
 	// Method delete messages (pointer data) previously method set in 'messages', so the main program mustn't delete it
 	// manually but execute this method again or execute ObjectsClean() method. So:
 	// After next executing of this method PluginMessage pointers previously returned will be incorrect. Pointers to
@@ -52,7 +54,7 @@ public:
 	// and 'last_message_time'.
 	//
 	// Return true if successful.
-	// time_from - which time the messages should be from
+	// time_from - which time the messages should be from (not include itself)
 	// max_messages_size - the max size of all messages.
 	// last_message_time - the output variable. The
 	// messages - the output variable. Should be empty, because class don't delete allocated data and
@@ -67,6 +69,7 @@ public:
     // TODO(ashl1future)
 	virtual void ObjectsClean();
 	virtual QString version() const;
+	// Should be set before any importing actions!
 	virtual void working_dir(const QString& path);
 	virtual void working_dir(const QDir& dir);
 
@@ -85,9 +88,14 @@ private:
 	static bool ReadUtf8StringOrDie(const QByteArray& source, quint32 from, QString& string);
 
 	static const bool can_init_from_file_;
+	// The datetime when the Skype start to date from.
+	static const QDateTime datetime_start_;
 	static const QString full_name_;
 	static const QString major_name_;
 	static const QString minor_name_;
+	// The pointer to the PluginProtocol. For the Skype it's only one protocol possible.
+	// The value: Skype
+	static const PluginProtocol* protocol_;
 	static const QString version_;
 
     static const quint8 kBodyHeaderLength = 3;
@@ -165,7 +173,6 @@ private:
 	bool InitMesssagesStructuresOrDie();
 	// Clean messages_to_export_ (delete PluginMessage objects and just only them, not any PluginObjects)
 	// This method should be run at the beginning GetNextMessagesOrDie() method
-	// TODO(ashl1future)
 	void MessagesClean();
 	// Search and read the message from 'time_from' datetime (included 'time_from') from the stream
 	// and accordingly set messages_dates_. Fill messages_ structures.
@@ -178,7 +185,7 @@ private:
 	// time_from - the datetime when messages will be searched from
 	bool ReadMessageOrDie(quint32 number_in_vector_,const QDateTime& time_from);
 	// Allocate if needed and return pointer to the PluginProtocol.
-	PluginProtocol* protocol();
+//	PluginProtocol* protocol();
 	// Uninitialize messages structures except messages_to_export_ (it should be cleaned at next GetNextMessagesOrDie() run
 	// by MessagesClean() method)
 	void UninitMessagesStructures();
@@ -196,6 +203,10 @@ private:
 	// Should be initialized by NULL at the constructor.
 	// The value: Skype Linux
 	PluginClient* client_;
+	// The error: 0 - no error
+	quint32 error_;
+	// Non-required additional error string.
+	QString error_string_;
 
 	// The current message in according to messages_absolute_filenames_
 	QList<PluginMessage*> messages_;
@@ -217,11 +228,8 @@ private:
 	// All messages that will be exported
 	QList<PluginMessage*> messages_to_export_;
 
-	// The pointer to the PluginProtocol. For the Skype it's only one protocol possible.
-	// Should be initialized by NULL at the constructor.
-	// The value: Skype
-	PluginProtocol* protocol_;
-	// The absolute directory where Skype files are located (example: /home/user/.Skype/user/)
+	// The absolute directory where Skype files are located (example: /home/user/.Skype/user/).
+	// Should not be a OS root directory (returned by QDir::root() method on running OS)
 	QDir working_dir_;
 };
 } // namespace SkypeLinux

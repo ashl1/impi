@@ -1,10 +1,12 @@
 TEMPLATE = app
-CONFIG += qt thread
+CONFIG += qt \
+    thread
 TARGET = impi
 QT += core \
     gui \
     sql
-HEADERS += limit.h \
+HEADERS += db-temp.h \
+    limit.h \
     objects.h \
     dialogs/chooseAccount.h \
     plugins.h \
@@ -12,7 +14,8 @@ HEADERS += limit.h \
     ui_impi.h \
     error.h \
     impi.h
-SOURCES += objects.cpp \
+SOURCES += db-temp.cpp \
+    objects.cpp \
     dialogs/chooseAccount.cpp \
     plugins.cpp \
     ui_impi.cpp \

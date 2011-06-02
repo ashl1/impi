@@ -99,8 +99,9 @@ void ImpiGUI::PluginChanged(){
 	MenuPluginElement* menu_plugin_element = &menu_plugins_[sender_plugin];
 
 	// connect "load" submenu
+	// TODO(ashl1future): Do ImportOnline, Import, OpenFile
 	if (menu_plugin_element->menu_element_for_conf_path())
-		connect(menu_plugin_element->menu_element_for_conf_path(), SIGNAL(triggered()), main_window_, SLOT(onWantConfPath()));
+		connect(menu_plugin_element->menu_element_for_conf_path(), SIGNAL(triggered()), sender_plugin, SLOT(ImportOnline()));
 	if (menu_plugin_element->menu_element_for_file_path())
 		connect(menu_plugin_element->menu_element_for_file_path(), SIGNAL(triggered()), main_window_, SLOT(onWantFilePath()));
 

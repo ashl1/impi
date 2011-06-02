@@ -4,6 +4,7 @@
 #include <QObject>
 
 #include "impi.h"
+#include "plugins.h"
 
 int main(int argc, char *argv[])
 {

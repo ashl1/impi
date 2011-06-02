@@ -26,7 +26,6 @@ public:
     void GotAccounts();
 
 public slots:
-	void onWantConfPath();
 	void onWantFilePath();
 };
 

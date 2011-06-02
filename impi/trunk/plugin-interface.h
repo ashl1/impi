@@ -26,8 +26,10 @@ class PluginInterface{
 	virtual ~PluginInterface(){};
 
 	virtual bool can_init_from_file() const = 0;
+	virtual quint32 error() const = 0;
+	virtual QString error_string() const = 0;
 	virtual QString full_name() const = 0;
-	virtual QString GetHomePath() const = 0;
+	virtual QDir GetHomePath() const = 0;
 	// path - path to initial dir with may be accounts on it
 	// pathes - list of absolute pathes to accounts dir
 	// names - list of shown account names

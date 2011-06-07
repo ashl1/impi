@@ -77,13 +77,13 @@ bool DBTemp::importOrDie(const QList<PluginMessage*> messages) {
 			if (used.find((const void*)account->user_) != used.end()) {
 				user_id = used[(const void*)account->user_];
 			} else {
-				query.prepare("SELECT id FROM Users WHERE firstName = :name");
+				query.prepare("SELECT id FROM Users WHERE firstname = :name");
 				query.bindValue(":name", account->user_->firstname_);
 				query.exec();
 				if (query.next()) {
 					user_id = query.value(0).toULongLong();
 				} else {
-					query.prepare("INSERT INTO Users(firstName) VALUES(:name)");
+					query.prepare("INSERT INTO Users(firstname) VALUES(:name)");
 					query.bindValue(":name", account->user_->firstname_);
 					query.exec();
 					user_id = query.lastInsertId().toULongLong();
@@ -133,7 +133,7 @@ bool DBTemp::importOrDie(const QList<PluginMessage*> messages) {
 		quint64 chat_id;
 		if (chats_in_db.constFind((*messages_iterator)->chat_) == chats_in_db.constEnd()) {
 			query.prepare("INSERT INTO Chats(timeStart) VALUES(:timeStart)");
-			query.bindValue(":timeStart", (*messages_iterator)->time_);
+			query.bindValue(":timeStarted", (*messages_iterator)->time_);
 			query.exec();
 			chat_id = query.lastInsertId().toULongLong();
 			chats_in_db[(*messages_iterator)->chat_] = chat_id;
@@ -186,11 +186,11 @@ void DBTemp::MakeDB() const {
 	query.exec("CREATE TABLE 'CHATS' ("
 			"'id' INTEGER PRIMARY KEY ASC,"
 			"'timeLastModified' INTEGER,"
-			"'timeStart' INTEGER"
+			"'timeStarted' INTEGER"
 			");");
 	query.exec("CREATE TABLE 'CLIENTS' ("
 			"'id' INTEGER PRIMARY KEY ASC,"
-			"'Name' TEXT UNIQUE NOT NULL"
+			"'name' TEXT UNIQUE NOT NULL"
 			");");
 	query.exec("CREATE TABLE 'PROTOCOLS' ("
 			"'id' INTEGER PRIMARY KEY ASC,"
@@ -198,7 +198,7 @@ void DBTemp::MakeDB() const {
 			");");
 	query.exec("CREATE TABLE 'USERS' ("
 			"'id' INTEGER PRIMARY KEY ASC,"
-			"'firstName' TEXT,"
+			"'firstname' TEXT,"
 			"'middlename' TEXT,"
 			"'soname' TEXT"
 			");");

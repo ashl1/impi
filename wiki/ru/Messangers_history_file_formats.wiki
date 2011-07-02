@@ -1,0 +1,5 @@
+#summary  Форматы файлов с историей клиентов коротких сообщений
+
+= [Format_QIP Quiet Internet Pager] =
+
+= [Format_Skype Skype] =

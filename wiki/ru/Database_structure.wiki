@@ -33,4 +33,4 @@
 
 Ниже представлена ER-диаграмма базы данных в нотации Питера Чена, построенная на основе сущностей, описанных в Используемые сущности и их взаимосвязь.
 
-http://code.google.com/p/impi/wiki/images/ER-DB.jpeg
+http://impi.googlecode.com/svn/wiki/images/ER-DB.jpeg

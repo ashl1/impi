@@ -1,3 +1,5 @@
-#summary 
+#summary  Messangers history file formats
 
-Dummy page. To write in the future.
+= [Format_QIP Quiet Internet Pager] =
+
+= [Format_Skype Skype] =

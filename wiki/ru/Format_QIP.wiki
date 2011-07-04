@@ -10,7 +10,7 @@
 
 При этом в данной директории `History` также есть директория `Archive` с архивными файлами qha (qip history arvhive). Их формат совпадает с форматом qhf.
 
-<table>
+<table border="1px" cellspacing="0">
 <tr><td>Байты</td><td>0x00</td><td>Символ</td><td>Описание</td></tr>
 <tr><td>1</td><td>51</td><td>Q</td><td rowspan="3">Заголовок. Тип файла</td></tr>
 <tr><td>2</td><td>48</td><td>H</td></tr>
